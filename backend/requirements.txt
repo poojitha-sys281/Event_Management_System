@@ -4,3 +4,4 @@ pymongo==4.8.0
 mongomock==4.1.2
 gunicorn==22.0.0
 dnspython==2.6.1
+setuptools<81
