@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Management System</title>
+<style>
+  :root {
+    --ink: #1b2230;
+    --paper: #f6f5f1;
+    --panel: #ffffff;
+    --line: #e2e0d8;
+    --accent: #b5651d;
+    --accent-soft: #f0dcc8;
+    --good: #2f6f4e;
+    --muted: #6b7280;
+    --danger: #b3392c;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  header {
+    background: var(--ink);
+    color: #f6f5f1;
+    padding: 22px 32px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  header .tag {
+    color: #c9c4b5;
+    font-size: 0.85rem;
+  }
+  #dbstatus {
+    font-size: 0.75rem;
+    color: #a9c9b5;
+  }
+  nav {
+    display: flex;
+    gap: 4px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    padding: 0 24px;
+  }
+  nav button {
+    border: none;
+    background: none;
+    padding: 14px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+  }
+  nav button.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .panel h2 {
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 4px;
+  }
+  input, select, textarea {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: #fff;
+    min-width: 160px;
+  }
+  button.primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.primary:hover { background: #954f16; }
+  button.ghost {
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  button.danger-link {
+    background: none;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 0.8rem;
+    text-decoration: underline;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  tr.card-row:hover { background: #faf9f6; cursor: pointer; }
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .badge.good { background: #dcede2; color: var(--good); }
+  .empty {
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 12px 0;
+  }
+  .event-select {
+    margin-bottom: 16px;
+  }
+  #toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s ease;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  header .who { display:flex; align-items:center; gap:12px; font-size:0.85rem; color:#c9c4b5; }
+  header .who button { background:none; border:1px solid #55607a; color:#f6f5f1; border-radius:6px; padding:5px 10px; cursor:pointer; font-size:0.8rem; }
+  .role-pill { background: var(--accent); color:#fff; border-radius:999px; padding:2px 10px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  #auth { max-width: 420px; margin: 56px auto; padding: 0 16px; }
+  .seg { display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-bottom:16px; }
+  .seg button { flex:1; border:none; background:#fff; padding:11px 8px; font-weight:600; cursor:pointer; color:var(--muted); font-size:.9rem; }
+  .seg button.active { background: var(--ink); color:#fff; }
+  .field { margin-bottom: 12px; }
+  .field input { width:100%; }
+  .hint { color: var(--muted); font-size:.8rem; margin: 0 0 14px; }
+  .linkbtn { background:none; border:none; color:var(--accent); cursor:pointer; text-decoration:underline; font-size:.85rem; padding:0; }
+  .bar { height:7px; background:#ece9df; border-radius:99px; overflow:hidden; min-width:90px; margin-top:4px; }
+  .bar > span { display:block; height:100%; background: var(--good); }
+  .bar.full > span { background: var(--danger); }
+  .stats { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .stat { background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:10px 16px; }
+  .stat b { display:block; font-size:1.4rem; }
+  .stat span { font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
+  .badge.full { background:#f5d9d5; color: var(--danger); }
+  button.primary:disabled { background:#cfc9bb; cursor:not-allowed; }
+  .hidden { display:none !important; }
+  .pager { display:flex; align-items:center; justify-content:center; gap:14px; padding:14px 0 2px; font-size:.85rem; color:var(--muted); }
+  .pager button:disabled { opacity:.4; cursor:not-allowed; }
+  .notice { background:#dcede2; color:var(--good); border-radius:8px; padding:10px 12px; font-size:.85rem; margin-bottom:12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Event Management System</h1>
+    <div class="tag" id="tagline">Create events &middot; Register &middot; Track attendance</div>
+  </div>
+  <div class="who hidden" id="who">
+    <span id="who-name"></span><span class="role-pill" id="who-role"></span>
+    <button id="logout">Log out</button>
+  </div>
+</header>
+
+<!-- ============ AUTH ============ -->
+<div id="auth">
+  <div class="panel">
+    <h2 id="auth-title">Log in</h2>
+    <div class="seg" id="role-seg">
+      <button data-role="attendee" class="active">I'm an Attendee</button>
+      <button data-role="organizer">I'm an Event Creator</button>
+    </div>
+    <p class="hint" id="role-hint">Attendees can browse events and register for them.</p>
+    <div class="field" id="f-name"><label>Full name</label><input id="a-name" autocomplete="name"></div>
+    <div class="field"><label>Email</label><input id="a-email" type="email" autocomplete="email"></div>
+    <div class="field" id="f-pass"><label>Password</label><input id="a-pass" type="password" autocomplete="current-password" placeholder="At least 8 characters"></div>
+    <div class="notice hidden" id="auth-msg"></div>
+    <button class="primary" id="a-submit" style="width:100%">Log in</button>
+    <p class="hint" style="margin:10px 0 0;text-align:center"><button class="linkbtn" id="forgot-link">Forgot password?</button></p>
+    <p class="hint hidden" id="resend-row" style="margin:8px 0 0;text-align:center"><button class="linkbtn" id="resend-link">Resend confirmation email</button></p>
+    <p class="hint" style="margin:14px 0 0;text-align:center">
+      <span id="switch-text">New here?</span> <button class="linkbtn" id="switch-mode">Create an account</button>
+    </p>
+  </div>
+</div>
+
+<div id="reset-panel" class="hidden" style="max-width:420px;margin:56px auto;padding:0 16px">
+  <div class="panel">
+    <h2>Choose a new password</h2>
+    <div class="field"><label>New password</label><input id="r-pass" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
+    <div class="field"><label>Confirm new password</label><input id="r-pass2" type="password" autocomplete="new-password"></div>
+    <button class="primary" id="r-submit" style="width:100%">Update password</button>
+    <p class="hint" style="margin:14px 0 0;text-align:center"><button class="linkbtn" id="r-back">Back to log in</button></p>
+  </div>
+</div>
+
+<!-- ============ ORGANIZER ============ -->
+<div id="org-app" class="hidden">
+  <nav id="org-nav">
+    <button data-tab="o-events" class="active">My Events</button>
+    <button data-tab="o-regs">Registrations</button>
+    <button data-tab="o-sched">Schedule</button>
+  </nav>
+  <main>
+    <section id="o-events">
+      <div class="panel">
+        <h2 id="ev-form-title">Create an event</h2>
+        <div class="row">
+          <div><label>Event name *</label><input id="ev-name"></div>
+          <div><label>Date *</label><input id="ev-date" type="date"></div>
+          <div><label>Location</label><input id="ev-loc"></div>
+          <div><label>Attendee limit *</label><input id="ev-cap" type="number" min="1" style="min-width:110px" placeholder="e.g. 50"></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div style="flex:1"><label>Description</label><input id="ev-desc" style="width:100%"></div>
+          <button class="primary" id="ev-save">Create event</button>
+          <button class="ghost hidden" id="ev-cancel">Cancel edit</button>
+        </div>
+      </div>
+      <div class="panel"><h2>Your events</h2><div id="ev-list"></div></div>
+    </section>
+
+    <section id="o-regs" class="hidden">
+      <div class="panel">
+        <div class="row event-select">
+          <div><label>Event</label><select id="reg-event"></select></div>
+          <div><label>Search attendees</label><input id="reg-q" placeholder="Name or email"></div>
+        </div>
+        <div id="reg-body"></div>
+      </div>
+    </section>
+
+    <section id="o-sched" class="hidden">
+      <div class="panel">
+        <div class="event-select"><label>Event</label><select id="s-event"></select></div>
+        <div class="row">
+          <div><label>Title *</label><input id="s-title"></div>
+          <div><label>Speaker</label><input id="s-speaker"></div>
+          <div><label>Start *</label><input id="s-start" type="datetime-local"></div>
+          <div><label>End</label><input id="s-end" type="datetime-local"></div>
+          <div><label>Venue</label><input id="s-venue"></div>
+          <button class="primary" id="s-add">Add to schedule</button>
+        </div>
+      </div>
+      <div class="panel"><h2>Schedule</h2><div id="s-list"></div></div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ ATTENDEE ============ -->
+<div id="att-app" class="hidden">
+  <nav id="att-nav">
+    <button data-tab="a-browse" class="active">Browse Events</button>
+    <button data-tab="a-mine">My Registrations</button>
+  </nav>
+  <main>
+    <section id="a-browse">
+      <div class="panel">
+        <div class="row"><div><label>Search events</label><input id="b-search" placeholder="Event name"></div></div>
+      </div>
+      <div class="panel"><h2>Upcoming events</h2><div id="b-list"></div></div>
+    </section>
+    <section id="a-mine" class="hidden">
+      <div class="panel"><h2>Events you're registered for</h2><div id="m-list"></div></div>
+    </section>
+    <div class="panel hidden" id="agenda-panel">
+      <h2 id="agenda-title">Schedule</h2><div id="agenda-list"></div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>

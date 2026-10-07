@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: event-management-system
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SECRET_KEY
+        generateValue: true   # Render creates a random secret used to sign login tokens
+      - key: MONGO_URI
+        sync: false   # paste your Atlas connection string in the Render dashboard
+      # Optional, add later in the Render dashboard (see DEPLOY.md section 4):
+      #   BREVO_API_KEY, MAIL_FROM, APP_URL  -> enables password-reset emails
